@@ -1,27 +1,33 @@
-export type TokenValue = string | number;
+/**
+ * A nested object of token values (strings or further nested objects).
+ */
+export type TokenMap = {
+  [key: string]: string | TokenMap;
+};
 
-export interface TokenConfig {
-  [key: string]: TokenValue | TokenConfig;
-}
+/**
+ * A flat map of dot-notation token keys to their string values.
+ */
+export type FlatTokenMap = Record<string, string>;
 
-export type FlatTokenMap = Record<string, TokenValue>;
-
-export interface CSSGeneratorOptions {
-  selector?: string;
-}
-
-export interface ThemeOptions {
-  /** CSS selector to scope the custom properties under. Defaults to ':root' */
-  selector?: string;
-  /** Optional prefix prepended to all token keys */
+/**
+ * The top-level configuration object loaded from a JSON config file.
+ */
+export interface PatchworkConfig {
+  /** Optional prefix for all CSS custom properties (e.g. "pw" → --pw-color-primary) */
   prefix?: string;
+  /** Design tokens organized by category */
+  tokens: TokenMap;
+  /** Optional theme overrides keyed by theme name */
+  themes?: Record<string, TokenMap>;
+  /** Output file path for generated CSS */
+  output?: string;
 }
 
-export interface ThemeOutput {
-  /** Flat map of token key -> value */
-  tokens: FlatTokenMap;
-  /** Generated CSS string */
-  css: string;
-  /** The selector used in the CSS output */
-  selector: string;
+/**
+ * Options passed to the CSS generator.
+ */
+export interface GeneratorOptions {
+  prefix?: string;
+  selector?: string;
 }
