@@ -1,38 +1,42 @@
-export type TokenValue = string | number;
-
-export type DesignTokens = {
-  [key: string]: TokenValue | DesignTokens;
-};
-
-export type FlatTokens = Record<string, TokenValue>;
-
-export type MediaQueryConfig = Record<string, string>;
-
-export interface ThemeConfig {
-  /** Base design tokens applied globally. */
-  tokens: DesignTokens;
-  /** Optional breakpoint-scoped token overrides. */
-  breakpoints?: Record<string, string | { min?: string; max?: string }>;
-  /** Optional named themes (e.g. dark mode). */
-  themes?: Record<string, DesignTokens>;
+export interface DesignToken {
+  value: string | number;
+  type?: string;
+  description?: string;
+  group?: string;
+  [key: string]: unknown;
 }
 
-export interface PatchworkConfig {
-  /** Output file path for the generated CSS. */
-  output: string;
-  /** CSS selector to scope root custom properties. Defaults to ':root'. */
+export type TokenMap = Record<string, DesignToken>;
+
+export interface TokenConfig {
+  tokens: Record<string, unknown>;
+  themes?: Record<string, Record<string, unknown>>;
+  breakpoints?: Record<string, string | number>;
+  options?: ConfigOptions;
+}
+
+export interface ConfigOptions {
+  prefix?: string;
+  outputFormat?: 'css' | 'json' | 'both';
+  outputPath?: string;
   selector?: string;
-  /** One or more theme configurations. */
-  theme: ThemeConfig;
 }
 
-export interface ParsedTokens {
-  flat: FlatTokens;
-  raw: DesignTokens;
+export interface TransformOptions {
+  scale?: number;
+  unit?: string;
+  prefix?: string;
+  clamp?: {
+    min: number;
+    max: number;
+  };
 }
 
-export interface GeneratedOutput {
-  css: string;
-  mediaQueries: string;
-  themes: Record<string, string>;
+export interface ComposedOutput {
+  css?: string;
+  json?: string;
+}
+
+export interface ResolvedTokenMap extends TokenMap {
+  [key: string]: DesignToken;
 }
