@@ -1,23 +1,27 @@
-/**
- * Raw JSON config shape accepted by patchwork-css.
- * Supports arbitrary nesting; leaf values must be strings or numbers.
- */
-export type DesignConfig = {
-  [key: string]: string | number | DesignConfig;
-};
+export type TokenValue = string | number;
 
-/**
- * Flat map of token key → string value produced after parsing.
- * Keys use kebab-case dot-flattened notation (e.g. "color-primary-500").
- */
-export type DesignTokens = Record<string, string>;
+export interface TokenConfig {
+  [key: string]: TokenValue | TokenConfig;
+}
 
-/**
- * Options for CSS custom property generation.
- */
+export type FlatTokenMap = Record<string, TokenValue>;
+
 export interface CSSGeneratorOptions {
-  /** Prefix prepended to every CSS variable name. Defaults to "pw". */
-  prefix?: string;
-  /** Selector that wraps the :root block. Defaults to ":root". */
   selector?: string;
+}
+
+export interface ThemeOptions {
+  /** CSS selector to scope the custom properties under. Defaults to ':root' */
+  selector?: string;
+  /** Optional prefix prepended to all token keys */
+  prefix?: string;
+}
+
+export interface ThemeOutput {
+  /** Flat map of token key -> value */
+  tokens: FlatTokenMap;
+  /** Generated CSS string */
+  css: string;
+  /** The selector used in the CSS output */
+  selector: string;
 }
