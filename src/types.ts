@@ -1,33 +1,38 @@
-/**
- * A nested object of token values (strings or further nested objects).
- */
-export type TokenMap = {
-  [key: string]: string | TokenMap;
+export type TokenValue = string | number;
+
+export type DesignTokens = {
+  [key: string]: TokenValue | DesignTokens;
 };
 
-/**
- * A flat map of dot-notation token keys to their string values.
- */
-export type FlatTokenMap = Record<string, string>;
+export type FlatTokens = Record<string, TokenValue>;
 
-/**
- * The top-level configuration object loaded from a JSON config file.
- */
-export interface PatchworkConfig {
-  /** Optional prefix for all CSS custom properties (e.g. "pw" → --pw-color-primary) */
-  prefix?: string;
-  /** Design tokens organized by category */
-  tokens: TokenMap;
-  /** Optional theme overrides keyed by theme name */
-  themes?: Record<string, TokenMap>;
-  /** Output file path for generated CSS */
-  output?: string;
+export type MediaQueryConfig = Record<string, string>;
+
+export interface ThemeConfig {
+  /** Base design tokens applied globally. */
+  tokens: DesignTokens;
+  /** Optional breakpoint-scoped token overrides. */
+  breakpoints?: Record<string, string | { min?: string; max?: string }>;
+  /** Optional named themes (e.g. dark mode). */
+  themes?: Record<string, DesignTokens>;
 }
 
-/**
- * Options passed to the CSS generator.
- */
-export interface GeneratorOptions {
-  prefix?: string;
+export interface PatchworkConfig {
+  /** Output file path for the generated CSS. */
+  output: string;
+  /** CSS selector to scope root custom properties. Defaults to ':root'. */
   selector?: string;
+  /** One or more theme configurations. */
+  theme: ThemeConfig;
+}
+
+export interface ParsedTokens {
+  flat: FlatTokens;
+  raw: DesignTokens;
+}
+
+export interface GeneratedOutput {
+  css: string;
+  mediaQueries: string;
+  themes: Record<string, string>;
 }
