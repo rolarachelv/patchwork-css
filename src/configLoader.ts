@@ -13,7 +13,16 @@ export function loadConfig(filePath: string): TokenConfig {
     throw new Error(`[patchwork-css] Config file not found: ${resolved}`);
   }
 
-  const raw = fs.readFileSync(resolved, 'utf-8');
+  let raw: string;
+  try {
+    raw = fs.readFileSync(resolved, 'utf-8');
+  } catch (err) {
+    throw new Error(
+      `[patchwork-css] Failed to read config file: ${resolved}\n${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 
   let parsed: unknown;
   try {
