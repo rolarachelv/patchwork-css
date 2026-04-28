@@ -1,42 +1,73 @@
-export interface DesignToken {
-  value: string | number;
-  type?: string;
-  description?: string;
-  group?: string;
-  [key: string]: unknown;
+// ─── Token Types ────────────────────────────────────────────────────────────
+
+export type TokenValue = string | number;
+
+export interface TokenMap {
+  [key: string]: TokenValue | TokenMap;
 }
 
-export type TokenMap = Record<string, DesignToken>;
+export interface FlatTokenMap {
+  [key: string]: TokenValue;
+}
 
-export interface TokenConfig {
-  tokens: Record<string, unknown>;
-  themes?: Record<string, Record<string, unknown>>;
+// ─── Config Types ────────────────────────────────────────────────────────────
+
+export interface PatchworkConfig {
+  prefix?: string;
+  tokens?: TokenMap;
+  themes?: Record<string, TokenMap>;
   breakpoints?: Record<string, string | number>;
-  options?: ConfigOptions;
+  typography?: TypographyScaleOptions;
+  spacing?: SpacingScaleOptions;
+  shadows?: ShadowScaleOptions;
+  output?: OutputOptions;
 }
 
-export interface ConfigOptions {
-  prefix?: string;
-  outputFormat?: 'css' | 'json' | 'both';
-  outputPath?: string;
-  selector?: string;
+export interface OutputOptions {
+  path?: string;
+  format?: 'css' | 'json' | 'both';
+  minify?: boolean;
 }
 
-export interface TransformOptions {
-  scale?: number;
+// ─── Scale Types ─────────────────────────────────────────────────────────────
+
+export interface TypographyScaleOptions {
+  baseSize?: number;
+  ratio?: number;
+  steps?: number;
   unit?: string;
-  prefix?: string;
-  clamp?: {
-    min: number;
-    max: number;
-  };
 }
 
-export interface ComposedOutput {
-  css?: string;
-  json?: string;
+export interface SpacingScaleOptions {
+  base?: number;
+  steps?: number;
+  unit?: string;
+  strategy?: 'linear' | 'fibonacci' | 'exponential';
 }
 
-export interface ResolvedTokenMap extends TokenMap {
-  [key: string]: DesignToken;
+export interface ShadowScaleOptions {
+  steps?: number;
+  baseColor?: string;
+  baseOpacity?: number;
+  baseBlur?: number;
+  baseSpread?: number;
+  baseOffsetY?: number;
+  opacityStep?: number;
+  blurStep?: number;
+  offsetYStep?: number;
+}
+
+export interface ShadowToken {
+  value: string;
+  offsetY: number;
+  blur: number;
+  spread: number;
+  color: string;
+}
+
+// ─── Theme Types ─────────────────────────────────────────────────────────────
+
+export interface ThemeConfig {
+  base: TokenMap;
+  overrides?: Record<string, TokenMap>;
 }
