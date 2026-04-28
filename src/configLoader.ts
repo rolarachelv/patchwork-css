@@ -56,5 +56,13 @@ export function writeOutput(outputPath: string, css: string): void {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  fs.writeFileSync(resolved, css, 'utf-8');
+  try {
+    fs.writeFileSync(resolved, css, 'utf-8');
+  } catch (err) {
+    throw new Error(
+      `[patchwork-css] Failed to write output file: ${resolved}\n${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+  }
 }
