@@ -1,58 +1,66 @@
-/**
- * animationScale.ts
- * Generates animation/transition design tokens (duration, easing, delay).
- */
+export interface AnimationStep {
+  label: string;
+  duration: string;
+  easing: string;
+}
 
 export interface AnimationScaleOptions {
-  durationBase?: number; // ms
-  durationSteps?: number;
+  steps: number;
+  baseDuration: number;
+  durationUnit?: 'ms' | 's';
   durationMultiplier?: number;
-  easings?: Record<string, string>;
+  easings?: string[];
 }
 
-export interface AnimationScale {
-  duration: Record<string, string>;
-  easing: Record<string, string>;
-}
-
-const DEFAULT_EASINGS: Record<string, string> = {
-  linear: 'linear',
-  easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-  easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-  easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
-};
-
-export function generateAnimationScale(
-  options: AnimationScaleOptions = {}
-): AnimationScale {
-  const {
-    durationBase = 100,
-    durationSteps = 6,
-    durationMultiplier = 2,
-    easings = DEFAULT_EASINGS,
-  } = options;
-
-  const duration: Record<string, string> = {};
-
-  for (let i = 0; i < durationSteps; i++) {
-    const label = stepLabel(i);
-    const value = roundTo(durationBase * Math.pow(durationMultiplier, i), 0);
-    duration[label] = `${value}ms`;
-  }
-
-  return {
-    duration,
-    easing: { ...easings },
-  };
-}
-
-export function stepLabel(index: number): string {
-  const labels = ['fastest', 'faster', 'fast', 'normal', 'slow', 'slower', 'slowest'];
-  return labels[index] ?? `step-${index}`;
-}
+const DEFAULT_EASINGS = [
+  'ease',
+  'ease-in',
+  'ease-out',
+  'ease-in-out',
+  'linear',
+];
 
 export function roundTo(value: number, decimals: number): number {
   const factor = Math.pow(10, decimals);
   return Math.round(value * factor) / factor;
+}
+
+export function stepLabel(index: number, total: number): string {
+  if (total === 1) return 'base';
+  const labels = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'];
+  if (total <= labels.length) return labels[index];
+  return `step-${index + 1}`;
+}
+
+/**
+ * Generates an animation scale with duration and easing values.
+ * Duration grows by multiplier at each step.
+ */
+export function generateAnimationScale(
+  options: AnimationScaleOptions
+): AnimationStep[] {
+  const {
+    steps,
+    baseDuration,
+    durationUnit = 'ms',
+    durationMultiplier = 1.5,
+    easings = DEFAULT_EASINGS,
+  } = options;
+
+  const scale: AnimationStep[] = [];
+
+  for (let i = 0; i < steps; i++) {
+    const rawDuration = baseDuration * Math.pow(durationMultiplier, i);
+    const duration =
+      durationUnit === 's'
+        ? `${roundTo(rawDuration / 1000, 3)}s`
+        : `${roundTo(rawDuration, 0)}ms`;
+
+    const easing = easings[i % easings.length];
+    const label = stepLabel(i, steps);
+
+    scale.push({ label, duration, easing });
+  }
+
+  return scale;
 }

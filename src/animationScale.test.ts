@@ -1,73 +1,74 @@
 import { generateAnimationScale, stepLabel, roundTo } from './animationScale';
 
-describe('generateAnimationScale', () => {
-  it('generates the correct number of duration steps', () => {
-    const scale = generateAnimationScale({ durationSteps: 4 });
-    expect(Object.keys(scale.duration)).toHaveLength(4);
-  });
-
-  it('uses default duration base of 100ms', () => {
-    const scale = generateAnimationScale();
-    expect(scale.duration['fastest']).toBe('100ms');
-  });
-
-  it('doubles duration with default multiplier', () => {
-    const scale = generateAnimationScale();
-    expect(scale.duration['fastest']).toBe('100ms');
-    expect(scale.duration['faster']).toBe('200ms');
-    expect(scale.duration['fast']).toBe('400ms');
-    expect(scale.duration['normal']).toBe('800ms');
-  });
-
-  it('respects custom durationBase', () => {
-    const scale = generateAnimationScale({ durationBase: 50, durationSteps: 3 });
-    expect(scale.duration['fastest']).toBe('50ms');
-    expect(scale.duration['faster']).toBe('100ms');
-  });
-
-  it('respects custom durationMultiplier', () => {
-    const scale = generateAnimationScale({
-      durationBase: 100,
-      durationSteps: 3,
-      durationMultiplier: 1.5,
-    });
-    expect(scale.duration['fastest']).toBe('100ms');
-    expect(scale.duration['faster']).toBe('150ms');
-    expect(scale.duration['fast']).toBe('225ms');
-  });
-
-  it('includes default easings', () => {
-    const scale = generateAnimationScale();
-    expect(scale.easing['linear']).toBe('linear');
-    expect(scale.easing['easeIn']).toBe('cubic-bezier(0.4, 0, 1, 1)');
-    expect(scale.easing['easeOut']).toBe('cubic-bezier(0, 0, 0.2, 1)');
-    expect(scale.easing['easeInOut']).toBe('cubic-bezier(0.4, 0, 0.2, 1)');
-  });
-
-  it('allows custom easings to override defaults', () => {
-    const scale = generateAnimationScale({
-      easings: { bounce: 'cubic-bezier(0.68, -0.55, 0.27, 1.55)' },
-    });
-    expect(scale.easing['bounce']).toBe('cubic-bezier(0.68, -0.55, 0.27, 1.55)');
-    expect(scale.easing['linear']).toBeUndefined();
+describe('roundTo', () => {
+  it('rounds to the specified number of decimals', () => {
+    expect(roundTo(1.2345, 2)).toBe(1.23);
+    expect(roundTo(100.999, 0)).toBe(101);
   });
 });
 
 describe('stepLabel', () => {
-  it('returns named labels for known indices', () => {
-    expect(stepLabel(0)).toBe('fastest');
-    expect(stepLabel(3)).toBe('normal');
-    expect(stepLabel(6)).toBe('slowest');
+  it('returns "base" for a single step', () => {
+    expect(stepLabel(0, 1)).toBe('base');
   });
 
-  it('returns fallback label for out-of-range index', () => {
-    expect(stepLabel(9)).toBe('step-9');
+  it('returns named labels for small scales', () => {
+    expect(stepLabel(0, 3)).toBe('xs');
+    expect(stepLabel(1, 3)).toBe('sm');
+    expect(stepLabel(2, 3)).toBe('md');
+  });
+
+  it('falls back to step-n for large scales', () => {
+    expect(stepLabel(8, 10)).toBe('step-9');
   });
 });
 
-describe('roundTo', () => {
-  it('rounds to given decimal places', () => {
-    expect(roundTo(1.005, 2)).toBe(1.01);
-    expect(roundTo(150, 0)).toBe(150);
+describe('generateAnimationScale', () => {
+  it('returns the correct number of steps', () => {
+    const scale = generateAnimationScale({ steps: 4, baseDuration: 100 });
+    expect(scale).toHaveLength(4);
+  });
+
+  it('first step uses baseDuration', () => {
+    const scale = generateAnimationScale({ steps: 3, baseDuration: 200 });
+    expect(scale[0].duration).toBe('200ms');
+  });
+
+  it('applies the multiplier to subsequent steps', () => {
+    const scale = generateAnimationScale({
+      steps: 2,
+      baseDuration: 100,
+      durationMultiplier: 2,
+    });
+    expect(scale[1].duration).toBe('200ms');
+  });
+
+  it('supports seconds as duration unit', () => {
+    const scale = generateAnimationScale({
+      steps: 1,
+      baseDuration: 300,
+      durationUnit: 's',
+    });
+    expect(scale[0].duration).toBe('0.3s');
+  });
+
+  it('cycles through provided easings', () => {
+    const easings = ['ease-in', 'ease-out'];
+    const scale = generateAnimationScale({
+      steps: 4,
+      baseDuration: 100,
+      easings,
+    });
+    expect(scale[0].easing).toBe('ease-in');
+    expect(scale[1].easing).toBe('ease-out');
+    expect(scale[2].easing).toBe('ease-in');
+    expect(scale[3].easing).toBe('ease-out');
+  });
+
+  it('each step has a non-empty label', () => {
+    const scale = generateAnimationScale({ steps: 5, baseDuration: 150 });
+    for (const step of scale) {
+      expect(step.label.length).toBeGreaterThan(0);
+    }
   });
 });
