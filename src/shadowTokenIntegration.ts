@@ -37,3 +37,22 @@ export function generateShadowCSS(
 export function shadowVar(step: string, prefix = 'shadow', cssPrefix = 'pw'): string {
   return `var(${tokenKeyToCSSVar(`${prefix}-${step}`, cssPrefix)})`;
 }
+
+/**
+ * Returns an object mapping each shadow step to its corresponding CSS variable reference.
+ * Useful for generating utility classes or consuming the full scale at once.
+ *
+ * @example
+ * // { sm: 'var(--pw-shadow-sm)', md: 'var(--pw-shadow-md)', ... }
+ * const vars = shadowVarMap(options);
+ */
+export function shadowVarMap(
+  options: ShadowScaleOptions,
+  prefix = 'shadow',
+  cssPrefix = 'pw',
+): Record<string, string> {
+  const scale = generateShadowScale(options);
+  return Object.fromEntries(
+    Object.keys(scale).map((step) => [step, shadowVar(step, prefix, cssPrefix)]),
+  );
+}
