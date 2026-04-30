@@ -3,81 +3,92 @@ import {
   buildStopValue,
   stepLabel,
   roundTo,
-  GradientConfig,
+  GradientScaleOptions,
 } from './gradientScale';
 
 describe('roundTo', () => {
   it('rounds to 2 decimal places by default', () => {
-    expect(roundTo(0.12345)).toBe(0.12);
+    expect(roundTo(1.2345)).toBe(1.23);
   });
 
   it('rounds to specified decimal places', () => {
-    expect(roundTo(1.5678, 1)).toBe(1.6);
+    expect(roundTo(1.2345, 3)).toBe(1.235);
   });
 });
 
 describe('stepLabel', () => {
-  it('returns 100 for a single item', () => {
-    expect(stepLabel(0, 1)).toBe('100');
-  });
-
-  it('returns 100 for first of many', () => {
+  it('returns 100 for first step', () => {
     expect(stepLabel(0, 5)).toBe('100');
   });
 
-  it('returns 1000 for last of many', () => {
+  it('returns 1000 for last step', () => {
     expect(stepLabel(4, 5)).toBe('1000');
   });
 
-  it('returns midpoint label', () => {
-    expect(stepLabel(1, 3)).toBe('550');
+  it('returns midpoint label for middle step', () => {
+    const label = stepLabel(2, 5);
+    expect(Number(label)).toBeGreaterThan(100);
+    expect(Number(label)).toBeLessThan(1000);
   });
 });
 
 describe('buildStopValue', () => {
-  it('returns color only when no position or opacity', () => {
-    expect(buildStopValue({ color: '#ff0000' })).toBe('#ff0000');
-  });
-
-  it('includes position percentage', () => {
-    expect(buildStopValue({ color: '#ff0000', position: 0.5 })).toBe('#ff0000 50%');
-  });
-
-  it('applies opacity via withOpacity', () => {
-    const result = buildStopValue({ color: '#ff0000', opacity: 0.5 });
-    expect(result).toContain('rgba');
+  it('formats stops correctly', () => {
+    const result = buildStopValue([
+      { position: 0, color: '#fff' },
+      { position: 100, color: '#000' },
+    ]);
+    expect(result).toBe('#fff 0%, #000 100%');
   });
 });
 
 describe('generateGradientScale', () => {
-  const configs: GradientConfig[] = [
-    { direction: 'to right', stops: [{ color: '#000000' }, { color: '#ffffff' }] },
-    { stops: [{ color: '#ff0000', position: 0 }, { color: '#0000ff', position: 1 }] },
-  ];
+  const opts: GradientScaleOptions = {
+    fromColor: '#ffffff',
+    toColor: '#000000',
+    steps: 5,
+  };
 
-  it('generates a scale with correct keys', () => {
-    const scale = generateGradientScale(configs);
-    expect(Object.keys(scale)).toEqual(['gradient-100', 'gradient-1000']);
+  it('returns the correct number of steps', () => {
+    const scale = generateGradientScale(opts);
+    expect(scale.length).toBe(5);
   });
 
-  it('uses provided direction', () => {
-    const scale = generateGradientScale(configs);
-    expect(scale['gradient-100']).toContain('to right');
+  it('each step has a label, value, and stops', () => {
+    const scale = generateGradientScale(opts);
+    for (const step of scale) {
+      expect(step.label).toBeDefined();
+      expect(step.value).toMatch(/linear-gradient/);
+      expect(Array.isArray(step.stops)).toBe(true);
+    }
   });
 
-  it('defaults direction to "to bottom"', () => {
-    const scale = generateGradientScale(configs);
-    expect(scale['gradient-1000']).toContain('to bottom');
+  it('uses custom direction', () => {
+    const scale = generateGradientScale({ ...opts, direction: 'to right' });
+    expect(scale[0].value).toMatch(/to right/);
   });
 
-  it('respects custom prefix', () => {
-    const scale = generateGradientScale(configs, 'bg');
-    expect(Object.keys(scale)[0]).toMatch(/^bg-/);
+  it('includes midColor stop when provided', () => {
+    const scale = generateGradientScale({ ...opts, midColor: '#888888' });
+    for (const step of scale) {
+      expect(step.stops.length).toBe(3);
+      expect(step.stops[1].color).toBe('#888888');
+    }
   });
 
-  it('includes stop positions', () => {
-    const scale = generateGradientScale(configs);
-    expect(scale['gradient-1000']).toContain('0%');
-    expect(scale['gradient-1000']).toContain('100%');
+  it('throws when steps < 2', () => {
+    expect(() =>
+      generateGradientScale({ ...opts, steps: 1 })
+    ).toThrow('at least 2 steps');
+  });
+
+  it('first label is 100', () => {
+    const scale = generateGradientScale(opts);
+    expect(scale[0].label).toBe('100');
+  });
+
+  it('last label is 1000', () => {
+    const scale = generateGradientScale(opts);
+    expect(scale[scale.length - 1].label).toBe('1000');
   });
 });
