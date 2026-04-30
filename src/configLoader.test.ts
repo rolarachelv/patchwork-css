@@ -39,6 +39,12 @@ describe('loadConfig', () => {
     fs.writeFileSync(arrPath, JSON.stringify([1, 2, 3]), 'utf-8');
     expect(() => loadConfig(arrPath)).toThrow('must export a JSON object');
   });
+
+  it('throws if root value is null', () => {
+    const nullPath = path.join(TMP_DIR, 'null.json');
+    fs.writeFileSync(nullPath, JSON.stringify(null), 'utf-8');
+    expect(() => loadConfig(nullPath)).toThrow('must export a JSON object');
+  });
 });
 
 describe('writeOutput', () => {
@@ -53,5 +59,13 @@ describe('writeOutput', () => {
     const deepPath = path.join(TMP_DIR, 'deep', 'nested', 'out.css');
     writeOutput(deepPath, '/* css */');
     expect(fs.existsSync(deepPath)).toBe(true);
+  });
+
+  it('overwrites existing file content', () => {
+    const overwritePath = path.join(TMP_DIR, 'overwrite.css');
+    writeOutput(overwritePath, ':root { --old: red; }');
+    writeOutput(overwritePath, ':root { --new: blue; }');
+    const written = fs.readFileSync(overwritePath, 'utf-8');
+    expect(written).toBe(':root { --new: blue; }');
   });
 });
