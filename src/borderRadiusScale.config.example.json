@@ -1,0 +1,11 @@
+{
+  "borderRadius": {
+    "steps": 5,
+    "base": 4,
+    "unit": "px",
+    "includeRound": true,
+    "includeFull": true,
+    "prefix": "border-radius",
+    "selector": ":root"
+  }
+}
