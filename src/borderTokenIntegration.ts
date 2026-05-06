@@ -45,3 +45,21 @@ export function borderRadiusVar(step: number | string): string {
 export function borderWidthVar(step: number | string): string {
   return `var(--border-width-${step})`;
 }
+
+/**
+ * Looks up a border token value from a BorderScale by label.
+ * Returns undefined if the label does not match any step.
+ *
+ * @param scale - The BorderScale to search.
+ * @param label - The step label to look up (e.g. 'sm', 'md').
+ * @param type  - Whether to retrieve the 'radius' or 'width' value.
+ */
+export function getBorderTokenValue(
+  scale: BorderScale,
+  label: string,
+  type: 'radius' | 'width'
+): string | undefined {
+  const step = scale.steps.find((s: BorderScaleStep) => s.label === label);
+  if (!step) return undefined;
+  return type === 'radius' ? `${step.radius}px` : `${step.width}px`;
+}
