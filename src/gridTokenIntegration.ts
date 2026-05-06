@@ -41,3 +41,23 @@ export function filterGridTokens(
     Object.entries(tokens).filter(([key]) => key.includes(segment))
   );
 }
+
+/**
+ * Rename all token keys by replacing an old prefix with a new one.
+ * Useful when integrating grid tokens into a larger design token namespace.
+ *
+ * e.g. renameGridTokenPrefix(tokens, '--grid', '--layout') would turn
+ * '--grid-columns-2' into '--layout-columns-2'.
+ */
+export function renameGridTokenPrefix(
+  tokens: Record<string, string>,
+  oldPrefix: string,
+  newPrefix: string
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(tokens).map(([key, value]) => [
+      key.startsWith(oldPrefix) ? newPrefix + key.slice(oldPrefix.length) : key,
+      value,
+    ])
+  );
+}
