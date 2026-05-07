@@ -55,6 +55,16 @@ describe('composeOutput', () => {
     expect(output.themes['dark']).toContain('[data-theme="dark"]');
     expect(output.themes['dark']).toContain('--color-primary');
   });
+
+  it('uses the configured selector for base CSS', () => {
+    const config: PatchworkConfig = {
+      ...baseConfig,
+      selector: 'html',
+    };
+    const output = composeOutput(config);
+    expect(output.css).toContain('html');
+    expect(output.css).not.toContain(':root');
+  });
 });
 
 describe('serialiseOutput', () => {
