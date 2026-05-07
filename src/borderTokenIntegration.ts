@@ -63,3 +63,14 @@ export function getBorderTokenValue(
   if (!step) return undefined;
   return type === 'radius' ? `${step.radius}px` : `${step.width}px`;
 }
+
+/**
+ * Returns all step labels defined in a BorderScale.
+ * Useful for iterating over available token names or validating label inputs.
+ *
+ * @param scale - The BorderScale to extract labels from.
+ * @returns An array of label strings in the order they appear in the scale.
+ */
+export function getBorderScaleLabels(scale: BorderScale): string[] {
+  return scale.steps.map((step: BorderScaleStep) => step.label);
+}
