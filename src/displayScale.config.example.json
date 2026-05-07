@@ -1,0 +1,17 @@
+{
+  "display": {
+    "prefix": "display",
+    "values": [
+      "block",
+      "inline",
+      "inline-block",
+      "flex",
+      "inline-flex",
+      "grid",
+      "inline-grid",
+      "none",
+      "contents",
+      "flow-root"
+    ]
+  }
+}
